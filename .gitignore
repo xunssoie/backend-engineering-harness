@@ -1,0 +1,15 @@
+# 이 파일은 프로젝트의 .claude/.gitignore가 된다. 경로는 .claude/ 기준이다
+
+# 하네스 실행 기록, 업데이트 작업 공간
+.state/
+
+# 측정용 토큰. 서명된 실제 자격 증명이다
+resources/perf/*/tokens.json
+resources/concurrency/*/tokens.json
+
+# 작업 계획서. harness.json의 plans.tracked가 true면 /init-harness가 이 줄을 지운다
+resources/plans/
+
+__pycache__/
+*.pyc
+.DS_Store

@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+"""harness CLI 런처. 같은 디렉토리의 harness_cli 패키지를 import 경로에 넣고 cli.main을 호출한다."""
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+
+from harness_cli.cli import main  # noqa: E402
+
+sys.exit(main())

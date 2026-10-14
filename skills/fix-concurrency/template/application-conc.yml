@@ -1,0 +1,52 @@
+# 예시: Spring Boot 측정용 프로파일 (concurrency.profileFile).
+# Spring Boot가 아니면 같은 원칙(풀 크기, 프록시 드라이버 제외, 로그 최소화)을 프로젝트 설정 방식으로 옮긴다.
+# {…} 자리는 .claude/harness.json의 perf 절과 프로젝트 기본 설정에서 채운다.
+
+spring:
+  application:
+    name: {애플리케이션 이름}-conc
+
+  datasource:
+    # perf.db, perf.dbName과 같은 DB. 호스트 포트를 docker-compose에서 확인한다(기본 포트가 아닐 수 있다).
+    url: {jdbc url}
+    username: {perf.dbUser}
+    password: {DB 비밀번호}
+    # 쿼리 로깅 프록시 드라이버(p6spy 등)를 쓰지 마라. 쿼리마다 프록시를 한 겹 태우면
+    # 그 오버헤드가 임계 구역 체류 시간에 그대로 들어가 경합 양상 자체를 바꾼다.
+    driver-class-name: {드라이버 클래스}
+
+    hikari:
+      # **부하 VU 이상으로 잡는다.** 풀이 VU보다 작으면 요청이 락이 아니라 커넥션을 기다리게 되고,
+      # 그러면 경합이 줄어들어 결함이 재현되지 않는다. 값을 바꾸면 record.md의 측정 환경에 남긴다.
+      # DB의 최대 접속 수(max_connections)도 이 값보다 커야 한다.
+      maximum-pool-size: 200
+      minimum-idle: 200
+      connection-timeout: 30000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: false
+        show_sql: false
+        generate_statistics: false
+    show-sql: false
+    open-in-view: false
+
+# 측정용 토큰을 서명키로 직접 만든다면 여기에 측정 전용 키를 둔다.
+# mint-tokens.sh가 이 값을 그대로 읽어 토큰을 만든다. 바꾸면 토큰도 다시 만든다.
+# {서명키 설정 경로}: {측정 전용 키. 실제 환경 키를 쓰지 마라}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  level:
+    root: WARN
+    org.hibernate.SQL: OFF
+    org.hibernate.orm.jdbc.bind: OFF
